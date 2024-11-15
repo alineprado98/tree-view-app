@@ -23,9 +23,9 @@ class SqfliteConfig {
       final dbPath = join(path, 'database.db');
       print('PATH => $dbPath');
       db = await openDatabase(
-        version: 1,
+        version: DATABASE_VERSION,
         dbPath,
-        password: '123',
+        password: DATABASE_PASSWORD,
         singleInstance: true,
         readOnly: false,
         onConfigure: _onConfigure,
