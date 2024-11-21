@@ -79,6 +79,17 @@ Rodar o aplicativo:
 Para rodar o aplicativo no seu dispositivo ou emulador, execute o comando:
 ```bash
 flutter run
+```
+
+
+
+[**APEX**] https://github.com/alineprado98/tree-view-app/blob/main/docs/apex.mp4
+
+
+[**JAGUAR**] https://github.com/alineprado98/tree-view-app/blob/main/docs/jaguar.mp4
+
+
+[**TOBIA**] https://github.com/alineprado98/tree-view-app/blob/main/docs/tobias.mp4
 
 
 
