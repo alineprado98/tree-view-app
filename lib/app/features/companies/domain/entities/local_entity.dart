@@ -1,8 +1,3 @@
-//  "id": "656a07b3f2d4a1001e2144bf",
-//   "name": "CHARCOAL STORAGE SECTOR",
-//   "parentId": "65674204664c41001e91ecb4"
-// se nao tiver um parentId quer dizer que é a local principal
-//se existir parentId quer dizer que é sub location
 import 'package:tree_view_app/app/features/companies/domain/entities/item.dart';
 
 class LocationEntity extends Item implements Entity {
@@ -17,8 +12,6 @@ class LocationEntity extends Item implements Entity {
     required this.parentId,
     required this.companyId,
   }) : super(itemIid: id, itemName: name, type: ItemType.location);
-
-  bool get isSubLocal => parentId?.isNotEmpty ?? false;
 
   factory LocationEntity.fromJson(Map<String, dynamic> json, String companyId) {
     try {

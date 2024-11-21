@@ -4,14 +4,14 @@ class Item implements Entity {
   final String itemIid;
   final String itemName;
   final Entity? currentItem;
-  final String? parentId;
+  final String? parentIdItem;
   final String? locationId;
   final ItemType type;
 
   final List<Item> list;
 
   Item({
-    this.parentId,
+    this.parentIdItem,
     this.locationId,
     this.currentItem,
     required this.itemIid,

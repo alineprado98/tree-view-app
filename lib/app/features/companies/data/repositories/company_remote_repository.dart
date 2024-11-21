@@ -97,25 +97,25 @@ class CompanyRemoteRepository implements ICompanyRemoteRepository {
     }
   }
 
-  Future<List<LocationEntity>> getLocationByLisIds(List<String> locationsIds, String companyId) async {
+  @override
+  Future<List<LocationEntity>> getLocationsByLisIds(List<String> locationsIds, String companyId) async {
     try {
       String ids = locationsIds.map((item) => "'$item'").join(' , ');
       String query = '''
-    SELECT * 
-FROM locations
-WHERE companyId = "$companyId" 
-  AND (
-    id IN ($ids)
-    OR parentId IN ($ids)
-    OR parentId IS NULL 
-    OR id IN (
-        SELECT id
-        FROM locations
-        WHERE parentId IN ($ids)
-          AND companyId = "$companyId"
-    )
-)
-
+                SELECT * 
+            FROM locations
+            WHERE companyId = "$companyId" 
+              AND (
+                id IN ($ids)
+                OR parentId IN ($ids)
+                OR parentId IS NULL 
+                OR id IN (
+                    SELECT id
+                    FROM locations
+                    WHERE parentId IN ($ids)
+                      AND companyId = "$companyId"
+                )
+            )
             ''';
 
       final result = await databaseService.query(query: query);
@@ -129,24 +129,26 @@ WHERE companyId = "$companyId"
   }
 
   @override
-  Future<List<LocationEntity>> getReletedLocationByLisIds(List<String> locationsIds, String companyId) async {
+  Future<List<LocationEntity>> getReletedLocationsByLisIds(List<String> locationsIds, String companyId) async {
     try {
-      String ids = locationsIds.map((item) => "'$item'").join(' , ');
-      String query = '''
-    SELECT * 
-FROM locations
-WHERE companyId = "$companyId" 
-  AND (
-    id IN ($ids)
-    OR parentId IN ($ids)
-    OR id IN (
-        SELECT id
-        FROM locations
-        WHERE parentId IN ($ids)
-          AND companyId = "$companyId"
-    )
-)
+      String ids = locationsIds.map((item) => "'$item'").join(',');
 
+      String query = '''
+                WITH RECURSIVE location_hierarchy AS (
+                    SELECT *
+                    FROM locations
+                    WHERE id IN ($ids)
+                    OR parentId IN ($ids)
+                    UNION ALL
+                    SELECT l.*
+                    FROM locations l
+                    INNER JOIN location_hierarchy lh
+                      ON l.id = lh.parentId
+                      
+                      AND l.companyId = "$companyId"
+                )
+               SELECT DISTINCT *
+                FROM location_hierarchy;
             ''';
 
       final result = await databaseService.query(query: query);
@@ -159,30 +161,7 @@ WHERE companyId = "$companyId"
     }
   }
 
-  Future<LocationEntity> getLocationById({required String companyId, String? locationId}) async {
-    try {
-      String query = '''
-                  SELECT 
-                      id,
-                      name,
-                      parentId,
-                      companyId
-                  FROM locations
-                  WHERE companyId = "$companyId"
-                  AND id = "$locationId"
-
-
-          ''';
-
-      final result = await databaseService.query(query: query);
-
-      final location = result.data!.result.map((item) => LocationEntity.fromJson(item, companyId)).toList().first;
-      return location;
-    } catch (e) {
-      rethrow;
-    }
-  }
-
+  @override
   Future<AssetEntity> getAssetById({required String companyId, String? parentId}) async {
     try {
       String query = '''
@@ -199,8 +178,6 @@ WHERE companyId = "$companyId"
                   FROM assets
                   WHERE companyId = "$companyId"
                   AND id = "$parentId"
-
-
           ''';
 
       final result = await databaseService.query(query: query);
@@ -212,25 +189,29 @@ WHERE companyId = "$companyId"
     }
   }
 
-  Future<List<AssetEntity>> getAssets({required String companyId, String? search}) async {
+  @override
+  Future<List<AssetEntity>> getAssets({
+    required String companyId,
+    String? search,
+    bool? criticalFilter,
+    bool? sensorEnergyFilter,
+  }) async {
     try {
       String query = '''
-      SELECT 
-                id,
-                name,
-                status,
-                sensorType,
-                sensorId,
-                gatewayId,
-                parentId,
-                companyId,
-                locationId
-            FROM 
-                assets
-            WHERE 
-               companyId = "$companyId"
-
+          SELECT *
+          FROM assets 
+          WHERE companyId = "$companyId"  
           ''';
+
+      if (search != null) {
+        query += '''  AND ( name LIKE "%$search%"  )''';
+      }
+      if (criticalFilter == true) {
+        query += ''' AND status="alert"''';
+      }
+      if (sensorEnergyFilter == true) {
+        query += ''' AND sensorType="energy"''';
+      }
 
       final result = await databaseService.query(query: query);
 
@@ -264,6 +245,29 @@ WHERE companyId = "$companyId"
       final locations = result.data!.result.map((item) => LocationEntity.fromJson(item, companyId)).toList();
       return locations;
     } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<List<LocationEntity>> getlocationsToFilter(List<String> locationsIds, String companyId, String? search) async {
+    try {
+      String ids = locationsIds.map((item) => "'$item'").join(' , ');
+
+      final result = await databaseService.query(query: '''
+          SELECT * 
+          FROM locations
+          WHERE companyId = "$companyId" 
+            AND (
+              id IN ($ids) 
+            );
+
+            ''');
+
+      final locations = result.data!.result.map((item) => LocationEntity.fromJson(item, companyId)).toList();
+      return locations;
+    } catch (e) {
+      print('error $e');
       rethrow;
     }
   }

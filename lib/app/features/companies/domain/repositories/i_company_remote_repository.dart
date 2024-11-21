@@ -7,13 +7,34 @@ abstract class ICompanyRemoteRepository {
 
   Future<List<CompanyEntity>?> getCompanies();
 
-  Future<List<LocationEntity>> getLocationByLisIds(List<String> locationsIds, String companyId);
+  Future<AssetEntity> getAssetById({
+    required String companyId,
+    String? parentId,
+  });
 
-  Future<LocationEntity> getLocationById({required String companyId, String? locationId});
+  Future<List<AssetEntity>> getAssets({
+    required String companyId,
+    String? search,
+    bool? criticalFilter,
+    bool? sensorEnergyFilter,
+  });
 
-  Future<AssetEntity> getAssetById({required String companyId, String? parentId});
-  Future<List<LocationEntity>> getReletedLocationByLisIds(List<String> locationsIds, String companyId);
+  Future<List<LocationEntity>> getLocationsByLisIds(
+    List<String> locationsIds,
+    String companyId,
+  );
+  Future<List<LocationEntity>> getReletedLocationsByLisIds(
+    List<String> locationsIds,
+    String companyId,
+  );
 
-  Future<List<AssetEntity>> getAssets({required String companyId, String? search});
-  Future<List<LocationEntity>> getLocations({required String companyId, String? search});
+  Future<List<LocationEntity>> getLocations({
+    required String companyId,
+    String? search,
+  });
+  Future<List<LocationEntity>> getlocationsToFilter(
+    List<String> locationsIds,
+    String companyId,
+    String? search,
+  );
 }

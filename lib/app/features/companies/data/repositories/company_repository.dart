@@ -49,56 +49,6 @@ class CompanyRepository implements ICompanyRepository {
     return builtItems;
   }
 
-  Future<List<AssetEntity>> getAssetByIdsLocations(List<String> locationsIds, companyId) async {
-    try {
-      String ids = locationsIds.map((item) => "'$item'").join(' , ');
-      final result = await databaseService.query(query: '''
-          SELECT * 
-          FROM assets
-          WHERE companyId = "$companyId" 
-            AND  locationId IN ($ids);
-            ''');
-
-      final assets = result.data!.result.map((item) => AssetEntity.fromJson(item)).toList();
-      return assets;
-    } catch (e) {
-      print('error $e');
-      rethrow;
-    }
-  }
-
-  Future<List<AssetEntity>> filterInAssetsTable({
-    required String companyId,
-    String? search,
-    bool? criticalFilter,
-    bool? sensorEnergyFilter,
-  }) async {
-    try {
-      String query = '''
-          SELECT *
-          FROM assets a
-          WHERE a.companyId = "$companyId"  
-          ''';
-
-      if (search != null) {
-        query += '''  AND ( a.name LIKE "%$search%"  )''';
-      }
-      if (criticalFilter == true) {
-        query += ''' AND status="alert"''';
-      }
-      if (sensorEnergyFilter == true) {
-        query += ''' AND sensorType="energy"''';
-      }
-
-      final result = await databaseService.query(query: query);
-
-      final assets = result.data!.result.map((item) => AssetEntity.fromJson(item)).toList();
-      return assets;
-    } catch (e) {
-      rethrow;
-    }
-  }
-
   @override
   Future<List<Item>> filter({
     required String companyId,
@@ -106,16 +56,17 @@ class CompanyRepository implements ICompanyRepository {
     bool? criticalFilter,
     bool? sensorEnergyFilter,
   }) async {
-    List<AssetEntity> assets = await filterInAssetsTable(
+    List<AssetEntity> moreAssets = [];
+    Map<String, AssetEntity> itemMap = {};
+    List<Item> builtAssets = [];
+    List<Item> builtItems = [];
+
+    List<AssetEntity> assets = await remoteRepository.getAssets(
       companyId: companyId,
       search: searchField,
       criticalFilter: criticalFilter,
       sensorEnergyFilter: sensorEnergyFilter,
     );
-    List<AssetEntity> moreAssets = [];
-    Map<String, AssetEntity> itemMap = {};
-    List<Item> builtAssets = [];
-    List<Item> builtItems = [];
 
     for (var i in assets) {
       if (i.parentId != null) {
@@ -143,7 +94,7 @@ class CompanyRepository implements ICompanyRepository {
 
     List<String> listIds = [];
     builtAssets.forEach((asset) => asset.locationId != null ? listIds.add(asset.locationId!) : null);
-    (List<Item>, Map<String, LocationEntity>) locationsResult = await buildLocationsToAssetsFilter(listIds, companyId, null);
+    (List<Item>, Map<String, LocationEntity>) locationsResult = await buildLocationsToAssetsFilter(listIds, companyId, searchField);
     builtItems.addAll(locationsResult.$1);
 
     for (var asset in builtAssets) {
@@ -155,7 +106,10 @@ class CompanyRepository implements ICompanyRepository {
     }
 
     if (searchField != null) {
-      List<LocationEntity> filteredLocations = await remoteRepository.getLocations(companyId: companyId, search: searchField);
+      List<LocationEntity> filteredLocations = await remoteRepository.getLocations(
+        companyId: companyId,
+        search: searchField,
+      );
       if (filteredLocations.isNotEmpty) {
         List<String> listLocationsIds = [];
         filteredLocations.forEach((loc) => listLocationsIds.add(loc.id));
@@ -164,46 +118,22 @@ class CompanyRepository implements ICompanyRepository {
           companyId,
         );
 
-        for (var loc in builtItems) {
+        for (var loc in builtLocations.$1) {
           final alreadyExistsInList = builtItems.any((existsItem) => existsItem.itemIid == loc.itemIid);
           if (alreadyExistsInList == true) {
             builtItems.removeWhere((i) => i.itemIid == loc.itemIid);
           }
           builtItems.add(loc);
         }
-        builtItems.addAll(builtLocations.$1);
       }
     }
     return builtItems;
   }
 
-  Future<List<LocationEntity>> getlocationsToFilter(List<String> locationsIds, String companyId, String? search) async {
-    try {
-      String ids = locationsIds.map((item) => "'$item'").join(' , ');
-
-      final result = await databaseService.query(query: '''
-          SELECT * 
-          FROM locations
-          WHERE companyId = "$companyId" 
-            AND (
-              id IN ($ids) OR name LIKE "%$search%" 
-            );
-
-            ''');
-
-      final locations = result.data!.result.map((item) => LocationEntity.fromJson(item, companyId)).toList();
-      return locations;
-    } catch (e) {
-      print('error $e');
-      rethrow;
-    }
-  }
-
   Future<(List<Item>, Map<String, LocationEntity>)> buildLocationsToFilter(List<String> listIds, String companyId) async {
-    final locations = await remoteRepository.getReletedLocationByLisIds(listIds, companyId);
+    final locations = await remoteRepository.getReletedLocationsByLisIds(listIds, companyId);
     List<Item> builtLocations = [];
     List<Item> builtAssets = [];
-    List<Item> builtItems = [];
 
     List<AssetEntity> assets = await remoteRepository.getAssets(companyId: companyId);
     Map<String, AssetEntity> itemMap = {};
@@ -246,7 +176,7 @@ class CompanyRepository implements ICompanyRepository {
   }
 
   Future<(List<Item>, Map<String, LocationEntity>)> buildLocations(List<String> listIds, String companyId) async {
-    final locations = await remoteRepository.getLocationByLisIds(listIds, companyId);
+    final locations = await remoteRepository.getLocationsByLisIds(listIds, companyId);
     List<Item> builtLocations = [];
     Map<String, LocationEntity> locationMap = {};
     for (var item in locations) {
@@ -269,8 +199,7 @@ class CompanyRepository implements ICompanyRepository {
   }
 
   Future<(List<Item>, Map<String, LocationEntity>)> buildLocationsToAssetsFilter(List<String> listIds, String companyId, String? search) async {
-    final locations = await getlocationsToFilter(listIds, companyId, search);
-
+    final locations = await remoteRepository.getlocationsToFilter(listIds, companyId, search);
     List<Item> builtLocations = [];
     Map<String, LocationEntity> locationMap = {};
     for (var item in locations) {
@@ -285,6 +214,7 @@ class CompanyRepository implements ICompanyRepository {
       } else {
         final parent = locationMap[item.parentId];
         parent != null ? parent.list.add(item) : null;
+        builtLocations.add(item);
       }
     }
 

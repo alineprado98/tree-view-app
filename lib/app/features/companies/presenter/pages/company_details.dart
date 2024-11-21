@@ -64,7 +64,11 @@ class LocationWiget extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView(
       shrinkWrap: true,
-      children: list.map((node) => _buildTile(node)).toList(),
+      children: list
+          .map((node) => BuildTile(
+                node: node,
+              ))
+          .toList(),
     );
   }
 }
@@ -192,65 +196,83 @@ class _SearchWidgetState extends State<SearchWidget> {
 }
 
 Widget verifyStatus(Item node) {
-  final nodeIsAsset = node.runtimeType == AssetEntity;
-  final currentItemIsAsset = (node.type == ItemType.asset && node.currentItem != null);
-
-  if (currentItemIsAsset || nodeIsAsset) {
-    final formatted = nodeIsAsset ? node as AssetEntity : node.currentItem as AssetEntity;
-    if (formatted.sensorType == AssetSensors.energy) return SvgPicture.asset('assets/svgs/bolt.svg');
-    if (formatted.status == AssetStatus.operating) return SvgPicture.asset('assets/svgs/bolt.svg');
-    if (formatted.status == AssetStatus.alert) return SvgPicture.asset('assets/svgs/alert.svg');
-
-    return const SizedBox.shrink();
+  if (node is AssetEntity) {
+    if (node.sensorType == AssetSensors.energy && node.status == AssetStatus.alert) return SvgPicture.asset('assets/svgs/energy.svg', colorFilter: ColorFilter.mode(Colors.red, BlendMode.srcIn));
+    if (node.sensorType == AssetSensors.energy && node.status == AssetStatus.operating) return SvgPicture.asset('assets/svgs/energy.svg');
+    if (node.sensorType == AssetSensors.vibration && node.status == AssetStatus.alert) return SvgPicture.asset('assets/svgs/vibration.svg');
+    if (node.sensorType == AssetSensors.vibration && node.status == AssetStatus.operating) return SvgPicture.asset('assets/svgs/vibration.svg', colorFilter: ColorFilter.mode(Colors.green, BlendMode.srcIn));
   }
+
   return const SizedBox.shrink();
 }
 
-Widget _buildTile(Item node) {
-  final isLocation = node is LocationEntity;
+class BuildTile extends StatefulWidget {
+  final Item node;
 
-  final lastItem = node.list.isEmpty ? true : false;
+  const BuildTile({super.key, required this.node});
 
-  return ExpansionTile(
-    childrenPadding: const EdgeInsets.only(left: 16),
-    expandedAlignment: Alignment.bottomLeft,
-    expandedCrossAxisAlignment: CrossAxisAlignment.stretch,
-    trailing: const SizedBox.shrink(),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(10.0),
-    ),
-    title: Row(
-      children: [
-        node.list.isNotEmpty
-            ? const Icon(
-                Icons.keyboard_arrow_down_rounded,
-                size: 20,
-              )
-            : const SizedBox.shrink(),
-        isLocation == true
-            ? SvgPicture.asset('assets/svgs/go_location.svg')
-            : lastItem == false
-                ? SvgPicture.asset('assets/svgs/io_cube_outline.svg')
-                : SvgPicture.asset(
-                    'assets/svgs/vector.svg',
-                    width: 22,
-                    height: 22,
-                  ),
-        Flexible(
-          child: Text(
-            node.itemName,
-            style: const TextStyle(
-              fontSize: 14,
-              overflow: TextOverflow.ellipsis,
+  @override
+  State<BuildTile> createState() => _BuildTileState();
+}
+
+class _BuildTileState extends State<BuildTile> {
+  @override
+  Widget build(BuildContext context) {
+    final isLocation = widget.node is LocationEntity;
+    final cubit = BlocProvider.of<CompanyDetailsCubit>(context);
+    final lastItem = widget.node.list.isEmpty ? true : false;
+    return ValueListenableBuilder<bool>(
+        valueListenable: cubit.expanded,
+        builder: (context, onChange, _) {
+          return ExpansionTile(
+            initiallyExpanded: onChange,
+            childrenPadding: const EdgeInsets.only(left: 16),
+            expandedAlignment: Alignment.bottomLeft,
+            expandedCrossAxisAlignment: CrossAxisAlignment.stretch,
+            trailing: const SizedBox.shrink(),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10.0),
             ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: verifyStatus(node),
-        )
-      ],
-    ),
-    children: node.list.isNotEmpty ? node.list.map((childNode) => _buildTile(childNode)).toList() : [],
-  );
+            title: Row(
+              children: [
+                widget.node.list.isNotEmpty
+                    ? const Icon(
+                        Icons.keyboard_arrow_down_rounded,
+                        size: 20,
+                      )
+                    : const SizedBox.shrink(),
+                isLocation == true
+                    ? SvgPicture.asset('assets/svgs/go_location.svg')
+                    : lastItem == false
+                        ? SvgPicture.asset('assets/svgs/io_cube_outline.svg')
+                        : SvgPicture.asset(
+                            'assets/svgs/vector.svg',
+                            width: 22,
+                            height: 22,
+                          ),
+                Flexible(
+                  child: Text(
+                    widget.node.itemName,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: verifyStatus(widget.node),
+                )
+              ],
+            ),
+            children: widget.node.list.isNotEmpty
+                ? widget.node.list
+                    .map((childNode) => BuildTile(
+                          node: childNode,
+                        ))
+                    .toList()
+                : [],
+          );
+        });
+  }
 }
