@@ -18,36 +18,42 @@ class CompanyDetailsPage extends StatefulWidget {
 class _CompanyDetailsPageState extends State<CompanyDetailsPage> {
   @override
   void initState() {
-    Future(() => BlocProvider.of<CompanyDetailsCubit>(context).buildTheTree(widget.companyId));
+    final cubit = BlocProvider.of<CompanyDetailsCubit>(context);
+    Future(() => cubit.buildTheTree(widget.companyId));
+
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Assets'),
-      ),
-      body: BlocBuilder<CompanyDetailsCubit, CompanyDetailsCubitState>(
-        bloc: BlocProvider.of<CompanyDetailsCubit>(context),
-        builder: (context, state) {
-          if (state is CompanyDetailsLoadingState) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (state is CompanyDetailsErrorState) {
-            return const SizedBox.shrink();
-          }
-          if (state is CompanyDetailsEmptyState) {
-            return const SizedBox.shrink();
-          }
-          if (state is CompanyDetailsSuccessState) {
-            return LocationWiget(list: state.list);
-          } else {
-            return const SizedBox.shrink();
-          }
-        },
-      ),
-    );
+        appBar: AppBar(
+          title: const Text('Assets'),
+        ),
+        body: Column(
+          children: [
+            SearchWidget(companyId: widget.companyId),
+            BlocBuilder<CompanyDetailsCubit, CompanyDetailsCubitState>(
+              bloc: BlocProvider.of<CompanyDetailsCubit>(context),
+              builder: (context, state) {
+                if (state is CompanyDetailsLoadingState) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (state is CompanyDetailsErrorState) {
+                  return const SizedBox.shrink();
+                }
+                if (state is CompanyDetailsEmptyState) {
+                  return const SizedBox.shrink();
+                }
+                if (state is CompanyDetailsSuccessState) {
+                  return Flexible(child: LocationWiget(list: state.list));
+                } else {
+                  return const SizedBox.shrink();
+                }
+              },
+            ),
+          ],
+        ));
   }
 }
 
@@ -63,6 +69,128 @@ class LocationWiget extends StatelessWidget {
   }
 }
 
+class SearchWidget extends StatefulWidget {
+  final String companyId;
+
+  SearchWidget({super.key, required this.companyId});
+
+  @override
+  State<SearchWidget> createState() => _SearchWidgetState();
+}
+
+class _SearchWidgetState extends State<SearchWidget> {
+  @override
+  Widget build(BuildContext context) {
+    final cubit = BlocProvider.of<CompanyDetailsCubit>(context);
+
+    return Padding(
+      padding: const EdgeInsets.all(15),
+      child: Column(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: Color(0xFFEAEEF2),
+              borderRadius: BorderRadius.circular(5),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black26,
+                ),
+              ],
+            ),
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: 'Buscar Ativo ou Local',
+                hintStyle: TextStyle(color: Colors.grey),
+                border: InputBorder.none,
+                icon: Icon(Icons.search, color: Colors.grey),
+                filled: true,
+                fillColor: Colors.transparent,
+              ),
+              onChanged: (value) async {
+                value.isNotEmpty ? cubit.search.value = value : cubit.search.value = null;
+                await cubit.filter(companyId: widget.companyId);
+              },
+            ),
+          ),
+          Row(
+            children: [
+              ValueListenableBuilder(
+                  valueListenable: cubit.sensorEnergyFilter,
+                  builder: (context, isChecked, _) {
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 15, top: 5),
+                      child: FilterChip(
+                          backgroundColor: Colors.transparent,
+                          selectedColor: Colors.blue.shade500,
+                          showCheckmark: false,
+                          selected: isChecked,
+                          shape: RoundedRectangleBorder(
+                            side: BorderSide(
+                              color: Colors.blueGrey,
+                              width: 0.5,
+                            ),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          label: Row(
+                            children: [
+                              Icon(
+                                color: isChecked ? Colors.white : Colors.blueGrey,
+                                size: 20,
+                                Icons.bolt_outlined,
+                              ),
+                              SizedBox(width: 8),
+                              Text('Sensor de Energia', style: TextStyle(color: isChecked ? Colors.white : Colors.blueGrey))
+                            ],
+                          ),
+                          onSelected: (value) async {
+                            cubit.sensorEnergyFilter.value = value;
+                            await cubit.filter(companyId: widget.companyId);
+                          }),
+                    );
+                  }),
+              ValueListenableBuilder(
+                  valueListenable: cubit.criticalFilter,
+                  builder: (context, isChecked, _) {
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 15, top: 5),
+                      child: FilterChip(
+                          backgroundColor: Colors.transparent,
+                          selectedColor: Colors.blue.shade500,
+                          showCheckmark: false,
+                          selected: isChecked,
+                          shape: RoundedRectangleBorder(
+                            side: BorderSide(
+                              color: Colors.blueGrey,
+                              width: 0.5,
+                            ),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          label: Row(
+                            children: [
+                              Icon(
+                                color: isChecked ? Colors.white : Colors.blueGrey,
+                                size: 20,
+                                Icons.error_outline,
+                              ),
+                              SizedBox(width: 8),
+                              Text('Crítico', style: TextStyle(color: isChecked ? Colors.white : Colors.blueGrey))
+                            ],
+                          ),
+                          onSelected: (value) async {
+                            cubit.criticalFilter.value = value;
+                            await cubit.filter(companyId: widget.companyId);
+                          }),
+                    );
+                  })
+            ],
+          )
+        ],
+      ),
+    );
+  }
+}
+
 Widget verifyStatus(Item node) {
   final nodeIsAsset = node.runtimeType == AssetEntity;
   final currentItemIsAsset = (node.type == ItemType.asset && node.currentItem != null);
@@ -70,7 +198,6 @@ Widget verifyStatus(Item node) {
   if (currentItemIsAsset || nodeIsAsset) {
     final formatted = nodeIsAsset ? node as AssetEntity : node.currentItem as AssetEntity;
     if (formatted.sensorType == AssetSensors.energy) return SvgPicture.asset('assets/svgs/bolt.svg');
-    // if (formatted.sensorType == AssetSensors.vibration) return SvgPicture.asset('assets/svgs/bolt.svg');
     if (formatted.status == AssetStatus.operating) return SvgPicture.asset('assets/svgs/bolt.svg');
     if (formatted.status == AssetStatus.alert) return SvgPicture.asset('assets/svgs/alert.svg');
 
@@ -80,7 +207,7 @@ Widget verifyStatus(Item node) {
 }
 
 Widget _buildTile(Item node) {
-  final isLocation = node.currentItem is LocationEntity;
+  final isLocation = node is LocationEntity;
 
   final lastItem = node.list.isEmpty ? true : false;
 
@@ -90,7 +217,7 @@ Widget _buildTile(Item node) {
     expandedCrossAxisAlignment: CrossAxisAlignment.stretch,
     trailing: const SizedBox.shrink(),
     shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(10.0), // Forma arredondada
+      borderRadius: BorderRadius.circular(10.0),
     ),
     title: Row(
       children: [
@@ -124,6 +251,6 @@ Widget _buildTile(Item node) {
         )
       ],
     ),
-    children: node.list.isNotEmpty ? node.list.map((childNode) => _buildTile(childNode)).toList() : [], // Se não houver filhos, não cria mais ExpansionTiles
+    children: node.list.isNotEmpty ? node.list.map((childNode) => _buildTile(childNode)).toList() : [],
   );
 }
