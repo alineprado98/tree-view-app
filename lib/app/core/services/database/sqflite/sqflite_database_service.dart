@@ -121,9 +121,9 @@ class SqfliteDatabaseService implements IDatabase {
   }
 
   @override
-  Future<DatabaseResponse> query({required String query}) async {
+  Future<DatabaseResponse> query({required String query, List<Object?>? params}) async {
     try {
-      final response = await database.rawQuery(query);
+      final response = await database.rawQuery(query, params);
       DatabaseData result = DatabaseData(result: response.toList());
       return DatabaseResponse(data: result);
     } catch (e, stackTrace) {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tree_view_app/app/core/services/locator/dependency_locator_service.dart';
-import 'package:tree_view_app/app/features/companies/domain/repositories/i_company_repository.dart';
+import 'package:tree_view_app/app/features/companies/domain/repositories/i_company_remote_repository.dart';
 import 'package:tree_view_app/app/features/companies/presenter/cubit/campany_cubit_state.dart';
 
 class CompanyCubit extends Cubit<CompanyCubitState> {
@@ -9,7 +9,7 @@ class CompanyCubit extends Cubit<CompanyCubitState> {
   CompanyCubit(this.context) : super(InitialState());
 
   Future<void> loadComapanies() async {
-    final companyRepository = getIt.get<ICompanyRepository>();
+    final companyRepository = getIt.get<ICompanyRemoteRepository>();
 
     emit(LoadingState());
 

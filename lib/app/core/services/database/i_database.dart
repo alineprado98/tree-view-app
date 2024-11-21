@@ -17,6 +17,7 @@ abstract class IDatabase {
   });
 
   Future<DatabaseResponse> query({
+    List<Object?>? params,
     required String query,
   });
   Future<DatabaseResponse> insertAll({
