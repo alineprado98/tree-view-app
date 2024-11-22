@@ -1,5 +1,7 @@
-import 'package:tree_view_app/app/core/services/client/i_client.dart';
-import 'package:tree_view_app/app/core/services/database/i_database.dart';
+import 'package:tree_view_app/app/common/exceptions/base_exception.dart';
+import 'package:tree_view_app/app/common/exceptions/custom_exceptions.dart';
+import 'package:tree_view_app/app/common/services/client/i_client.dart';
+import 'package:tree_view_app/app/common/services/database/i_database.dart';
 import 'package:tree_view_app/app/features/companies/domain/entities/asset_entity.dart';
 import 'package:tree_view_app/app/features/companies/domain/entities/company_entity.dart';
 import 'package:tree_view_app/app/features/companies/domain/entities/local_entity.dart';
@@ -14,8 +16,8 @@ class CompanyRemoteRepository implements ICompanyRemoteRepository {
   @override
   Future<void> firstLoadCompanies() async {
     try {
-      final localCompanies = await getCompanies();
-      if (localCompanies.isEmpty) {
+      final (companies, _) = await getCompanies();
+      if (companies.isEmpty) {
         final companies = await getCompaniesApi();
 
         await saveCompanies(companies);
@@ -86,14 +88,13 @@ class CompanyRemoteRepository implements ICompanyRemoteRepository {
   }
 
   @override
-  Future<List<CompanyEntity>> getCompanies() async {
+  Future<(List<CompanyEntity>, BaseException?)> getCompanies() async {
     try {
       final result = await databaseService.get(tableName: 'companies');
       final companies = result.data!.result.map((item) => CompanyEntity.fromJson(item)).toList();
-      return companies;
+      return (companies, null);
     } catch (e) {
-      print('error $e');
-      rethrow;
+      return (<CompanyEntity>[], DatabaseException('Erro ao carregar as companias'));
     }
   }
 

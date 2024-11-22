@@ -1,6 +1,6 @@
 import 'package:tree_view_app/app/features/companies/domain/entities/item.dart';
 
-class AssetEntity extends Item implements Entity {
+class AssetEntity extends Item {
   final String id;
   final String name;
   final String? sensorId;
@@ -11,8 +11,17 @@ class AssetEntity extends Item implements Entity {
   final AssetStatus? status;
   final AssetSensors? sensorType;
 
-  AssetEntity({required this.id, required this.name, required this.parentId, required this.sensorId, required this.sensorType, required this.status, required this.gatewayId, required this.locationId, required this.companyId})
-      : super(
+  AssetEntity({
+    required this.id,
+    required this.name,
+    required this.parentId,
+    required this.sensorId,
+    required this.sensorType,
+    required this.status,
+    required this.gatewayId,
+    required this.locationId,
+    required this.companyId,
+  }) : super(
           itemIid: id,
           itemName: name,
           type: ItemType.asset,

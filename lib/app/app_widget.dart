@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tree_view_app/app/common/routes/routes.dart';
+import 'package:tree_view_app/app/common/theme/app_theme.dart';
 
 class AppWidget extends StatelessWidget {
   const AppWidget({super.key});
@@ -7,14 +8,8 @@ class AppWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       title: 'Tree view app',
-      theme: ThemeData(
-        appBarTheme: const AppBarTheme(
-          elevation: 0,
-          shadowColor: Colors.transparent,
-          backgroundColor: Color(0xFF17192D),
-        ),
-        useMaterial3: false,
-      ),
+      theme: AppTheme.theme,
+      debugShowCheckedModeBanner: false,
       routerConfig: AppRoutes.routes,
     );
   }
