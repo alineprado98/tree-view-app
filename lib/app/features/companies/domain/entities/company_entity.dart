@@ -2,7 +2,7 @@ class CompanyEntity {
   final String id;
   final String name;
 
-  CompanyEntity({
+  const CompanyEntity({
     required this.id,
     required this.name,
   }) : super();

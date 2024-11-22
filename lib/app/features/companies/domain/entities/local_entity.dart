@@ -1,6 +1,6 @@
 import 'package:tree_view_app/app/features/companies/domain/entities/item.dart';
 
-class LocationEntity extends Item implements Entity {
+class LocationEntity extends Item {
   final String id;
   final String name;
   final String? parentId;

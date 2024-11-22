@@ -1,4 +1,5 @@
-import 'package:tree_view_app/app/core/services/database/i_database.dart';
+import 'package:tree_view_app/app/common/exceptions/base_exception.dart';
+import 'package:tree_view_app/app/common/services/database/i_database.dart';
 import 'package:tree_view_app/app/features/companies/domain/entities/asset_entity.dart';
 import 'package:tree_view_app/app/features/companies/domain/entities/item.dart';
 import 'package:tree_view_app/app/features/companies/domain/entities/local_entity.dart';
@@ -12,7 +13,7 @@ class CompanyRepository implements ICompanyRepository {
   const CompanyRepository({required this.databaseService, required this.remoteRepository});
 
   @override
-  Future<List<Item>> buildTheTree({
+  Future<(List<Item>, BaseException?)> buildTheTree({
     required String companyId,
   }) async {
     List<AssetEntity> assets = await remoteRepository.getAssets(companyId: companyId);
@@ -46,11 +47,11 @@ class CompanyRepository implements ICompanyRepository {
     }
 
     sortList(builtItems);
-    return builtItems;
+    return (builtItems, null);
   }
 
   @override
-  Future<List<Item>> filter({
+  Future<(List<Item>, BaseException?)> filter({
     required String companyId,
     String? searchField,
     bool? criticalFilter,
@@ -127,7 +128,7 @@ class CompanyRepository implements ICompanyRepository {
         }
       }
     }
-    return builtItems;
+    return (builtItems, null);
   }
 
   Future<(List<Item>, Map<String, LocationEntity>)> buildLocationsToFilter(List<String> listIds, String companyId) async {

@@ -1,3 +1,4 @@
+import 'package:tree_view_app/app/common/exceptions/base_exception.dart';
 import 'package:tree_view_app/app/features/companies/domain/entities/asset_entity.dart';
 import 'package:tree_view_app/app/features/companies/domain/entities/company_entity.dart';
 import 'package:tree_view_app/app/features/companies/domain/entities/local_entity.dart';
@@ -5,7 +6,7 @@ import 'package:tree_view_app/app/features/companies/domain/entities/local_entit
 abstract class ICompanyRemoteRepository {
   Future<void> firstLoadCompanies();
 
-  Future<List<CompanyEntity>?> getCompanies();
+  Future<(List<CompanyEntity>, BaseException?)> getCompanies();
 
   Future<AssetEntity> getAssetById({
     required String companyId,
