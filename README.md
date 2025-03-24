@@ -1,67 +1,66 @@
 # tree-view-app
 
-Este é um aplicativo Flutter responsável por montar uma árvore de componentes para empresas específicas. Ele permite a busca de localização, componentes da localização e ativos (como máquinas) de uma empresa. Os usuários podem filtrar os itens por nome e status, como ativos em status crítico ou sensores de energia.
+This is a Flutter app responsible for building a component tree for specific companies. It allows location searches, location components, and assets (such as machines) of a company. Users can filter items by name and status, such as assets in critical status or power sensors.
 
-## Funcionalidades
+## Features
 
-- **Busca por localização**: Os usuários podem buscar locais específicos dentro da estrutura da empresa.
-- **Componentes da localização**: O app permite que você visualize os componentes de uma localização específica.
-- **Ativos (Máquinas)**: É possível buscar ativos, como máquinas de uma empresa, e filtrar por nome ou status (por exemplo, ativos com sensores de energia ou status crítico).
-- **Filtro avançado**: Filtros para ajudar a localizar ativos com status crítico ou sensores de energia.
+- **Location Search**: Users can search for specific locations within the company's structure.
+- **Location Components**: The app allows you to view the components of a specific location.
+- **Assets (Machines)**: It is possible to search for assets, such as a company's machines, and filter by name or status (e.g., assets with power sensors or critical status).
+- **Advanced Filter**: Filters to help locate assets with critical status or power sensors.
 
-
-## Bibliotecas Utilizadas
+## Libraries Used
 
 - **GetIt**:  
-  Gerenciador de injeção de dependências
+  Dependency injection manager.
 
 - **GoRouter**:  
-  Usado para definir as rotas da aplicação, permitindo uma navegação fluida entre as páginas.
-  
+  Used to define application routes, enabling smooth navigation between pages.
+
 - **Flutter_BLoC**:  
-  Gerencia o estado do aplicativo de maneira eficiente utilizando o padrão BLoC (Business Logic Component). Essa biblioteca permite que a lógica de negócios seja isolada da camada de apresentação (UI), tornando o código mais modular, testável e fácil de manter. Ao usar o BLoC, os estados do aplicativo são gerenciados de forma reativa, o que melhora a escalabilidade e a reusabilidade do código.
+  Efficiently manages the app's state using the BLoC (Business Logic Component) pattern. This library allows business logic to be isolated from the presentation layer (UI), making the code more modular, testable, and easier to maintain. By using BLoC, the app's states are managed reactively, improving code scalability and reusability.
 
 - **Sqflite_sqlcipher**:  
-  Utilizado para armazenamento de dados local com segurança, criptografando o banco de dados para garantir a proteção das informações sensíveis.
+  Used for secure local data storage, encrypting the database to ensure the protection of sensitive information.
 
 - **Flutter Native Splash**:  
-  Biblioteca para exibir uma tela de splash personalizada ao iniciar o aplicativo. O `flutter_native_splash` permite criar uma tela de inicialização que pode ser personalizada com a identidade visual da aplicação, sendo exibida enquanto os recursos iniciais do aplicativo estão sendo carregados ou enquanto o aplicativo está se conectando a serviços de backend.
+  Library to display a custom splash screen when starting the app. `flutter_native_splash` allows creating a launch screen that can be customized with the app's visual identity, displayed while the app's initial resources are loading or while the app connects to backend services.
 
 - **Flutter_svg**:  
-  Usado para exibir ícones e imagens em formato SVG no aplicativo. O formato SVG é um formato gráfico vetorial, o que significa que as imagens podem ser redimensionadas sem perda de qualidade. Essa biblioteca é útil para exibir ícones e gráficos escaláveis de maneira eficiente em diferentes resoluções de tela.
+  Used to display icons and images in SVG format in the app. The SVG format is a vector graphic format, meaning images can be resized without losing quality. This library is useful for efficiently displaying scalable icons and graphics across different screen resolutions.
 
 - **Dio**:  
-  Biblioteca para chamadas HTTP no Flutter, permitindo a comunicação com APIs externas de forma eficiente. O Dio é uma ferramenta poderosa para fazer requisições HTTP, oferecendo funcionalidades como interceptadores, tratamento de erros, configurações de timeout e suporte para envio de dados multipart, entre outras funcionalidades avançadas que tornam a interação com APIs mais fácil e segura.
+  HTTP client for Flutter, enabling efficient communication with external APIs. Dio is a powerful tool for making HTTP requests, offering features like interceptors, error handling, timeout settings, and support for multipart data uploads, among other advanced functionalities that make API interaction easier and safer.
 
+## Architecture
 
-
-## Arquitetura
-
-A arquitetura do aplicativo segue o padrão **Clean Architecture**, com separação clara de responsabilidades para facilitar a escalabilidade e a manutenção:
+The app architecture follows the **Clean Architecture** pattern, with a clear separation of responsibilities to facilitate scalability and maintenance:
 
 - **Repositories**:  
-  A camada de repositórios é responsável pela lógica de acesso a dados. Aqui, você encontra as interfaces de comunicação com os serviços de backend e o banco de dados local.
+  The repository layer is responsible for data access logic. Here, you'll find interfaces for communication with backend services and the local database.
 
 - **Services**:  
-  A camada de serviços neste contexto é uma abstracao das libs externas utilizada no projeto.
+  The service layer in this context is an abstraction of the external libraries used in the project.
 
 - **Pages**:  
-  A camada de páginas contém as telas e widgets do aplicativo. Cada página representa uma interface do usuário (UI) que interage com os dados fornecidos pelos repositórios e serviços.
+  The pages layer contains the app's screens and widgets. Each page represents a user interface (UI) that interacts with the data provided by repositories and services.
 
-A divisão em camadas segue o princípio de **separação de responsabilidades**, onde cada camada é responsável por um aspecto distinto da aplicação. Isso ajuda na manutenção, escalabilidade e teste do código.
+This layered division follows the **separation of responsibilities** principle, where each layer is responsible for a distinct aspect of the application. This helps with code maintenance, scalability, and testing.
 
-## Variáveis de Ambiente
+## Environment Variables
 
-Para configurar variáveis de ambiente (como URLs de APIs), foi utilizado o pacote **flutter_dotenv**. Um arquivo `.env.template` foi criado para armazenar as variáveis de ambiente necessárias, e você pode copiar esse arquivo para `.env` e preencher com os valores adequados.
+To configure environment variables (such as API URLs), the **flutter_dotenv** package was used. A `.env.template` file was created to store the necessary environment variables, and you can copy this file to `.env` and fill it with the appropriate values.
 
-Exemplo de variáveis no arquivo `.env`:
+Example of variables in the `.env` file:
+
+ `.env`:
 BASE_URL=https://api.exemplo.com 
 DATABASE_PASSWORD=your_api_key
 
 
-## Como Executar
+## How to Run
 
-1. **Clonar o repositório**:
+1. **Clone the repository**:
 
    ```bash
    git clone https://github.com/usuario/tree-view-app.git
@@ -69,19 +68,31 @@ DATABASE_PASSWORD=your_api_key
    flutter pub get
    ```
 
-   Configurar as variáveis de ambiente:
-
+  Configure environment variables:
 2. 
-Copie o arquivo .env.template para .env e preencha com as informações necessárias.
+Copy the .env.template file to .env and fill it with the necessary information.
 
-Rodar o aplicativo:
 
-Para rodar o aplicativo no seu dispositivo ou emulador, execute o comando:
+
+3. Run the app:
+
+To run the app on your device or emulator, execute the command:
 ```bash
 flutter run
 ```
+## 📸 App screenshots
 
 
+<p align="center">
+
+<img src="https://github.com/alineprado98/tree-view-app/blob/develop/docs/images/home.png" alt="Tela Inicial do App" width="300" height="auto">
+<img src="https://github.com/alineprado98/tree-view-app/blob/develop/docs/images/all_machines.png" alt="Tela Inicial do App" width="300" height="auto">
+<img src="https://github.com/alineprado98/tree-view-app/blob/develop/docs/images/list_is_empty.png" alt="Tela Inicial do App" width="300" height="auto">
+<img src="https://github.com/alineprado98/tree-view-app/blob/develop/docs/images/something_wrong.png" alt="Tela Inicial do App" width="300" height="auto">
+
+<p/>
+
+## 📸 App preview
 
 [**APEX**] https://github.com/alineprado98/tree-view-app/blob/main/docs/apex.mp4
 
