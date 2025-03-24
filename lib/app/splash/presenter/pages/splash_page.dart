@@ -16,6 +16,7 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
   @override
   void initState() {
     super.initState();
+    Duration(seconds: 20);
     redirect();
 
     _animationController = AnimationController(
